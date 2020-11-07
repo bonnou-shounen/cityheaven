@@ -14,7 +14,7 @@ $ go get -u github.com/bonnou-shounen/cityheaven/cmd/cityheaven
 $ export CITYHEAVEN_LOGIN=xxxx
 $ export CITYHEAVEN_PASSWORD=xxxx
 
-$ cityheaven dump my casts > casts.txt
+$ cityheaven dump fav casts > casts.txt
 $ vim casts.txt  # edit order
-$ cityheaven restore my casts < casts.txt
+$ cityheaven restore fav casts < casts.txt
 ```
