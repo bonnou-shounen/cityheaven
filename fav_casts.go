@@ -52,6 +52,7 @@ func (c *Client) AddFavoriteCast(cast *Cast) error {
 	values := url.Values{
 		"girlId": []string{fmt.Sprint(cast.CastID)},
 	}
+
 	return c.get("https://www.cityheaven.net/tokyo/A0000/A000000/a/okiniiri/", values)
 }
 
@@ -61,6 +62,7 @@ func (c *Client) DeleteFavoriteCast(cast *Cast) error {
 
 func (c *Client) AddFavoriteCasts(casts []*Cast) error {
 	var anyErr error
+
 	for i := len(casts) - 1; i >= 0; i-- {
 		err := c.AddFavoriteCast(casts[i])
 		if err != nil {
@@ -77,6 +79,7 @@ func (c *Client) DeleteFavoriteCasts(casts []*Cast) error {
 	}
 
 	values := url.Values{}
+
 	for _, cast := range casts {
 		values.Add(fmt.Sprint("data_", cast.CastID), "削除する")
 	}
@@ -90,6 +93,7 @@ func (c *Client) SortFavoriteCasts(casts []*Cast) error {
 	}
 
 	queryB := bytes.NewBufferString("update=変更を反映する")
+
 	for _, cast := range casts {
 		queryB.WriteString(fmt.Sprintf("&sort_girl[%d]=1", cast.CastID))
 	}
@@ -103,6 +107,7 @@ func (c *Client) GetFavoriteCount(cast *Cast) (int, error) {
 		"girl_id":  []string{fmt.Sprint(cast.CastID)},
 	}
 	resp, err := c.getRaw("https://www.cityheaven.net/api/myheaven/v1/getgirlfavcnt/", values)
+
 	if err != nil {
 		return 0, err
 	}
