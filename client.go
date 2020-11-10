@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -66,4 +67,17 @@ func (c *Client) post(strURL, body string) error {
 	defer resp.Body.Close()
 
 	return nil
+}
+
+func (c *Client) parseNumber(str, prefix, suffix string) int {
+	if i := strings.Index(str, prefix); i >= 0 {
+		str = str[i+len(prefix):]
+		if j := strings.Index(str, suffix); j >= 0 {
+			str = str[:j]
+		}
+	}
+
+	num, _ := strconv.Atoi(str)
+
+	return num
 }

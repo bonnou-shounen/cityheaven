@@ -12,6 +12,9 @@ type Arg struct {
 		Fav struct {
 			Casts DumpFavoriteCasts `cmd:""`
 		} `cmd:""`
+		Shop struct {
+			Casts DumpShopCasts `cmd:""`
+		} `cmd:""`
 	} `cmd:""`
 	Restore struct {
 		Fav struct {
