@@ -50,11 +50,9 @@ func (r *RestoreFavoriteCasts) readCasts(reader io.Reader) []*cityheaven.Cast {
 		shopID, _ := strconv.Atoi(fields[0])
 		castID, _ := strconv.Atoi(fields[1])
 
-		if shopID == 0 || castID == 0 {
-			continue
+		if castID != 0 && shopID != 0 {
+			casts = append(casts, &cityheaven.Cast{ID: castID, ShopID: shopID})
 		}
-
-		casts = append(casts, &cityheaven.Cast{ShopID: shopID, CastID: castID})
 	}
 
 	return casts
@@ -66,7 +64,7 @@ func (r *RestoreFavoriteCasts) areSame(curCasts, newCasts []*cityheaven.Cast) bo
 	}
 
 	for i := range curCasts {
-		if curCasts[i].CastID != newCasts[i].CastID {
+		if curCasts[i].ID != newCasts[i].ID {
 			return false
 		}
 	}
@@ -79,7 +77,7 @@ func (r *RestoreFavoriteCasts) castsDiff(curCasts, newCasts []*cityheaven.Cast) 
 LA:
 	for _, newCast := range newCasts {
 		for _, curCast := range curCasts {
-			if newCast.CastID == curCast.CastID {
+			if newCast.ID == curCast.ID {
 				continue LA
 			}
 		}
@@ -89,7 +87,7 @@ LA:
 LD:
 	for _, curCast := range curCasts {
 		for _, newCast := range newCasts {
-			if curCast.CastID == newCast.CastID {
+			if curCast.ID == newCast.ID {
 				continue LD
 			}
 		}

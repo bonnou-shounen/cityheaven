@@ -1,8 +1,8 @@
 package cityheaven
 
 type Cast struct {
-	ShopID   int
-	CastID   int
+	ID       int
 	Name     string
+	ShopID   int
 	ShopName string
 }

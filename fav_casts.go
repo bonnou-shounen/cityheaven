@@ -25,21 +25,21 @@ func (c *Client) GetFavoriteCasts() ([]*Cast, error) {
 	var casts []*Cast
 
 	doc.Find("div.myshopnew").Each(func(j int, div *goquery.Selection) {
-		shop := div.Find("p.myshopnew-head-name").Text()
-		name := div.Find("p.myshopnew-title").Text()
-		girl, _ := div.Find(`input[name="girl"]`).Attr("value")
-		commu, _ := div.Find(`input[name="commu"]`).Attr("value")
+		shopName := div.Find("p.myshopnew-head-name").Text()
+		castName := div.Find("p.myshopnew-title").Text()
+		strCastID, _ := div.Find(`input[name="girl"]`).Attr("value")
+		strShopID, _ := div.Find(`input[name="commu"]`).Attr("value")
 
-		castID, _ := strconv.Atoi(girl)
-		shopID, _ := strconv.Atoi(commu)
+		castID, _ := strconv.Atoi(strCastID)
+		shopID, _ := strconv.Atoi(strShopID)
 
-		if name != "" && shopID != 0 && castID != 0 {
+		if castID != 0 && castName != "" && shopID != 0 && shopName != "" {
 			casts = append(casts,
 				&Cast{
+					ID:       castID,
+					Name:     castName,
 					ShopID:   shopID,
-					CastID:   castID,
-					Name:     name,
-					ShopName: shop,
+					ShopName: shopName,
 				},
 			)
 		}
@@ -50,7 +50,7 @@ func (c *Client) GetFavoriteCasts() ([]*Cast, error) {
 
 func (c *Client) AddFavoriteCast(cast *Cast) error {
 	values := url.Values{
-		"girlId": []string{fmt.Sprint(cast.CastID)},
+		"girlId": []string{fmt.Sprint(cast.ID)},
 	}
 
 	return c.get("https://www.cityheaven.net/tokyo/A0000/A000000/a/okiniiri/", values)
@@ -81,7 +81,7 @@ func (c *Client) DeleteFavoriteCasts(casts []*Cast) error {
 	values := url.Values{}
 
 	for _, cast := range casts {
-		values.Add(fmt.Sprint("data_", cast.CastID), "削除する")
+		values.Add(fmt.Sprint("data_", cast.ID), "削除する")
 	}
 
 	return c.get("https://www.cityheaven.net/tt/community/ABEditFavoriteGirl/", values)
@@ -95,7 +95,7 @@ func (c *Client) SortFavoriteCasts(casts []*Cast) error {
 	queryB := bytes.NewBufferString("update=変更を反映する")
 
 	for _, cast := range casts {
-		queryB.WriteString(fmt.Sprintf("&sort_girl[%d]=1", cast.CastID))
+		queryB.WriteString(fmt.Sprintf("&sort_girl[%d]=1", cast.ID))
 	}
 
 	return c.post("https://www.cityheaven.net/y/community/ABEditFavoriteGirl/", queryB.String())
@@ -103,8 +103,8 @@ func (c *Client) SortFavoriteCasts(casts []*Cast) error {
 
 func (c *Client) GetFavoriteCount(cast *Cast) (int, error) {
 	values := url.Values{
+		"girl_id":  []string{fmt.Sprint(cast.ID)},
 		"commu_id": []string{fmt.Sprint(cast.ShopID)},
-		"girl_id":  []string{fmt.Sprint(cast.CastID)},
 	}
 	resp, err := c.getRaw("https://www.cityheaven.net/api/myheaven/v1/getgirlfavcnt/", values)
 

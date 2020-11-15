@@ -91,15 +91,15 @@ func (c *Client) getShopCastsOnPage(strURL string, page int, pInfo *castsPageInf
 	var casts []*Cast
 
 	doc.Find("div.girllistimg").Each(func(_ int, div *goquery.Selection) {
-		name, _ := div.Find("img").Attr("alt")
+		castName, _ := div.Find("img").Attr("alt")
 		href, _ := div.Find("a").Attr("href")
 		castID := c.parseNumber(href, "girlid-", "/")
 
-		if name != "" && castID != 0 {
+		if castID != 0 && castName != "" {
 			casts = append(casts,
 				&Cast{
-					CastID: castID,
-					Name:   name,
+					ID:   castID,
+					Name: castName,
 				},
 			)
 		}
