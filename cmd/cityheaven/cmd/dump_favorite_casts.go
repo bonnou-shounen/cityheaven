@@ -28,7 +28,7 @@ func (d *DumpFavoriteCasts) Run() error {
 			favCount, _ = c.GetFavoriteCount(cast)
 		}
 
-		fmt.Fprintf(os.Stdout, "%d\t%d\t%d\t%s\t%s\n", cast.ShopID, cast.ID, favCount, cast.Name, cast.ShopName)
+		fmt.Fprintf(os.Stdout, "%d\t%d\t%d\t%s\t%s\n", cast.ID, cast.ShopID, favCount, cast.Name, cast.ShopName)
 	}
 
 	return nil

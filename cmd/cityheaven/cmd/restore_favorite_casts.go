@@ -43,16 +43,26 @@ func (r *RestoreFavoriteCasts) readCasts(reader io.Reader) []*cityheaven.Cast {
 	scanner := bufio.NewScanner(reader)
 	for scanner.Scan() {
 		fields := strings.Fields(scanner.Text())
-		if len(fields) < 2 {
+		fields = append(fields, "", "", "", "", "")
+
+		castID, _ := strconv.Atoi(fields[0])
+		shopID, _ := strconv.Atoi(fields[1])
+		// fields[2] is favCount
+		castName := fields[3]
+		shopName := fields[4]
+
+		if castID == 0 || shopID == 0 {
 			continue
 		}
 
-		shopID, _ := strconv.Atoi(fields[0])
-		castID, _ := strconv.Atoi(fields[1])
-
-		if castID != 0 && shopID != 0 {
-			casts = append(casts, &cityheaven.Cast{ID: castID, ShopID: shopID})
-		}
+		casts = append(casts,
+			&cityheaven.Cast{
+				ID:       castID,
+				Name:     castName,
+				ShopID:   shopID,
+				ShopName: shopName,
+			},
+		)
 	}
 
 	return casts

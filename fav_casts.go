@@ -33,16 +33,18 @@ func (c *Client) GetFavoriteCasts() ([]*Cast, error) {
 		castID, _ := strconv.Atoi(strCastID)
 		shopID, _ := strconv.Atoi(strShopID)
 
-		if castID != 0 && castName != "" && shopID != 0 && shopName != "" {
-			casts = append(casts,
-				&Cast{
-					ID:       castID,
-					Name:     castName,
-					ShopID:   shopID,
-					ShopName: shopName,
-				},
-			)
+		if castID == 0 || castName == "" || shopID == 0 || shopName == "" {
+			return
 		}
+
+		casts = append(casts,
+			&Cast{
+				ID:       castID,
+				Name:     castName,
+				ShopID:   shopID,
+				ShopName: shopName,
+			},
+		)
 	})
 
 	return casts, nil
