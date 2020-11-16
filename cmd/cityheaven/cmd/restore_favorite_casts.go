@@ -84,24 +84,22 @@ func (r *RestoreFavoriteCasts) areSame(curCasts, newCasts []*cityheaven.Cast) bo
 
 //nolint:lll
 func (r *RestoreFavoriteCasts) castsDiff(curCasts, newCasts []*cityheaven.Cast) (delCasts, addCasts []*cityheaven.Cast) {
-LA:
-	for _, newCast := range newCasts {
-		for _, curCast := range curCasts {
-			if newCast.ID == curCast.ID {
-				continue LA
-			}
-		}
-		addCasts = append(addCasts, newCast)
+	oldCasts := map[int]*cityheaven.Cast{}
+
+	for _, curCast := range curCasts {
+		oldCasts[curCast.ID] = curCast
 	}
 
-LD:
-	for _, curCast := range curCasts {
-		for _, newCast := range newCasts {
-			if curCast.ID == newCast.ID {
-				continue LD
-			}
+	for _, newCast := range newCasts {
+		if _, exists := oldCasts[newCast.ID]; exists {
+			delete(oldCasts, newCast.ID)
+		} else {
+			addCasts = append(addCasts, newCast)
 		}
-		delCasts = append(delCasts, curCast)
+	}
+
+	for _, oldCast := range oldCasts {
+		delCasts = append(delCasts, oldCast)
 	}
 
 	return delCasts, addCasts
