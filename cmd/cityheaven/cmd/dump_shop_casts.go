@@ -42,22 +42,20 @@ func (d *DumpShopCasts) Run() error {
 }
 
 func (d *DumpShopCasts) getURL() (string, error) {
-	var area, shop string
+	shop := d.Shop
+	area := d.Area
 
-	if d.Shop != "" {
-		shop = d.Shop
-
-		if d.Area != "" {
-			area = d.Area
-		} else {
+	if shop != "" {
+		if area == "" {
 			area = "tokyo"
 		}
 	} else {
-		if d.URL == "" {
-			d.URL = d.readURL()
+		url := d.URL
+		if url == "" {
+			url = d.readURL()
 		}
-		err := d.parseURL(d.URL, &area, &shop)
-		if err != nil {
+
+		if err := d.parseURL(url, &area, &shop); err != nil {
 			return "", err
 		}
 	}

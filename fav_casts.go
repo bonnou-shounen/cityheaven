@@ -108,8 +108,8 @@ func (c *Client) GetFavoriteCount(cast *Cast) (int, error) {
 		"girl_id":  []string{fmt.Sprint(cast.ID)},
 		"commu_id": []string{fmt.Sprint(cast.ShopID)},
 	}
-	resp, err := c.getRaw("https://www.cityheaven.net/api/myheaven/v1/getgirlfavcnt/", values)
 
+	resp, err := c.getRaw("https://www.cityheaven.net/api/myheaven/v1/getgirlfavcnt/", values)
 	if err != nil {
 		return 0, err
 	}
