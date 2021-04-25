@@ -11,7 +11,7 @@ import (
 )
 
 func (c *Client) GetFavoriteCasts() ([]*Cast, error) {
-	resp, err := c.http.Get("https://www.cityheaven.net/tt/community/ABFavoriteGirlList/")
+	resp, err := c.http.Get("https://www.cityheaven.net/tt/community/ABEditFavoriteGirl/")
 	if err != nil {
 		return nil, err
 	}
