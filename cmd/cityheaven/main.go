@@ -14,7 +14,6 @@ func main() {
 		&arg,
 		kong.Name("cityheaven"),
 		kong.Vars{"version": "0.0.6"},
-		kong.UsageOnMissing(),
 		kong.UsageOnError(),
 	)
 
