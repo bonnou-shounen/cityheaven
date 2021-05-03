@@ -88,11 +88,52 @@ func (c *Client) getShopCastsOnPage(strURL string, page int, pInfo *castsPageInf
 		return nil, err
 	}
 
+	div := doc.Find("div.girllistimg")
+	if div.Length() == 0 {
+		return c.getShopCastsOnOldPage(doc, pInfo)
+	}
+
 	var casts []*Cast
 
-	doc.Find("div.girllistimg").Each(func(_ int, div *goquery.Selection) {
+	div.Each(func(_ int, div *goquery.Selection) {
 		castName, _ := div.Find("img").Attr("alt")
 		href, _ := div.Find("a").Attr("href")
+		castID := c.parseNumber(href, "girlid-", "/")
+
+		if castID != 0 && castName != "" {
+			casts = append(casts,
+				&Cast{
+					ID:   castID,
+					Name: castName,
+				},
+			)
+		}
+	})
+
+	if pInfo != nil {
+		pInfo.LastPage, _ = strconv.Atoi(doc.Find(`ul.paging a:not([class="next"])`).Last().Text())
+
+		doc.Find("head script").EachWithBreak(func(_ int, scr *goquery.Selection) bool {
+			shopID := c.parseNumber(scr.Text(), `{'shop_id':'`, `'}`)
+			if shopID > 0 {
+				pInfo.ShopID = shopID
+				return false
+			}
+			return true
+		})
+
+		pInfo.ShopName = doc.Find(`div#location span[itemprop="name"]`).Last().Text()
+	}
+
+	return casts, nil
+}
+
+func (c *Client) getShopCastsOnOldPage(doc *goquery.Document, pInfo *castsPageInfo) ([]*Cast, error) {
+	var casts []*Cast
+
+	doc.Find("ul#girl_list").Each(func(_ int, li *goquery.Selection) {
+		castName, _ := li.Find("p.girl_name a").Attr("title")
+		href, _ := li.Find("div.girl_img a").Attr("href")
 		castID := c.parseNumber(href, "girlid-", "/")
 
 		if castID != 0 && castName != "" {
