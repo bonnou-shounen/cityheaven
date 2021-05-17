@@ -13,7 +13,7 @@ func main() {
 	ctx := kong.Parse(
 		&arg,
 		kong.Name("cityheaven"),
-		kong.Vars{"version": "0.0.7"},
+		kong.Vars{"version": "0.0.8"},
 		kong.UsageOnError(),
 	)
 

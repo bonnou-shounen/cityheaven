@@ -46,26 +46,24 @@ func (c *Client) GetShopCasts(strURL string) ([]*Cast, error) {
 		return nil, err
 	}
 
-	if info.LastPage <= 1 {
-		return casts, nil
-	}
+	if info.LastPage >= 2 {
+		castsOnPage := make([][]*Cast, info.LastPage+1)
+		swg := sizedwaitgroup.New(3)
 
-	castsOnPage := make([][]*Cast, info.LastPage+1)
-	swg := sizedwaitgroup.New(3)
+		for page := 2; page <= info.LastPage; page++ {
+			swg.Add()
 
-	for page := 2; page <= info.LastPage; page++ {
-		swg.Add()
+			go func(page int) {
+				defer swg.Done()
 
-		go func(page int) {
-			defer swg.Done()
+				castsOnPage[page], _ = c.getShopCastsOnPage(strURL, page, nil)
+			}(page)
+		}
+		swg.Wait()
 
-			castsOnPage[page], _ = c.getShopCastsOnPage(strURL, page, nil)
-		}(page)
-	}
-	swg.Wait()
-
-	for page := 2; page <= info.LastPage; page++ {
-		casts = append(casts, castsOnPage[page]...)
+		for page := 2; page <= info.LastPage; page++ {
+			casts = append(casts, castsOnPage[page]...)
+		}
 	}
 
 	for _, cast := range casts {
