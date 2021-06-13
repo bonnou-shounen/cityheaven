@@ -5,7 +5,7 @@ cli for [cityheaven](https://www.cityheaven.net).
 ## install
 
 ```bash
-$ go get -u github.com/bonnou-shounen/cityheaven/cmd/cityheaven
+$ go install github.com/bonnou-shounen/cityheaven/cmd/cityheaven@latest
 ```
 
 ## usage

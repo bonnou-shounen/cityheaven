@@ -13,8 +13,8 @@ func main() {
 	ctx := kong.Parse(
 		&arg,
 		kong.Name("cityheaven"),
-		kong.Vars{"version": "0.0.8"},
-		kong.UsageOnError(),
+		kong.Vars{"version": "0.0.9"},
+		kong.ShortUsageOnError(),
 	)
 
 	if arg.Option.Login != "" {
