@@ -94,7 +94,7 @@ func (c *Client) getShopCastsOnPage(strURL string, page int, pInfo *castsPageInf
 	var casts []*Cast
 
 	div.Each(func(_ int, div *goquery.Selection) {
-		castName, _ := div.Find("img").Attr("alt")
+		castName, _ := div.Find("img.no_login").Attr("alt")
 		href, _ := div.Find("a").Attr("href")
 		castID := c.parseNumber(href, "girlid-", "/")
 
