@@ -28,6 +28,9 @@ func (c *Client) Login(id, password string) error {
 		"pass": []string{password},
 	}
 
+	u, _ := url.Parse("https://www.cityheaven.net/")
+	c.http.Jar.SetCookies(u, []*http.Cookie{{}})
+
 	resp, err := c.http.PostForm("https://www.cityheaven.net/tokyo/loginajax/", values)
 	if err != nil {
 		return err
