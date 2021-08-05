@@ -1,7 +1,9 @@
 package util
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"os"
 
 	libnetrc "github.com/jdxcode/netrc"
@@ -9,16 +11,20 @@ import (
 	cityheaven "github.com/bonnou-shounen/cityheaven"
 )
 
-func NewLoggedClient() (*cityheaven.Client, error) {
+func NewLoggedClient(ctx context.Context) (*cityheaven.Client, error) {
 	id, password := getCredential()
 	if id == "" || password == "" {
 		return nil, errors.New("missing credentials")
 	}
 
 	client := cityheaven.NewClient()
-	err := client.Login(id, password)
 
-	return client, err
+	err := client.Login(ctx, id, password)
+	if err != nil {
+		return nil, fmt.Errorf(`error on Login("%s", "***"): %w`, id, err)
+	}
+
+	return client, nil
 }
 
 func getCredential() (id, password string) {

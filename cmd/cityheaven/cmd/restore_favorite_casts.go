@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"bufio"
+	"context"
+	"fmt"
 	"io"
 	"os"
 	"strconv"
@@ -16,14 +18,16 @@ type RestoreFavoriteCasts struct{}
 func (r *RestoreFavoriteCasts) Run() error {
 	newCasts := r.readCasts(os.Stdin)
 
-	c, err := util.NewLoggedClient()
+	ctx := context.Background()
+
+	c, err := util.NewLoggedClient(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("error on NewLoggedClient(): %w", err)
 	}
 
-	curCasts, err := c.GetFavoriteCasts()
+	curCasts, err := c.GetFavoriteCasts(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("error on GetFacoriteCasts(): %w", err)
 	}
 
 	if r.areSame(curCasts, newCasts) {
@@ -31,10 +35,14 @@ func (r *RestoreFavoriteCasts) Run() error {
 	}
 
 	delCasts, addCasts := r.castsDiff(curCasts, newCasts)
-	c.DeleteFavoriteCasts(delCasts) //nolint:errcheck
-	c.AddFavoriteCasts(addCasts)    //nolint:errcheck
+	c.DeleteFavoriteCasts(ctx, delCasts) //nolint:errcheck
+	c.AddFavoriteCasts(ctx, addCasts)    //nolint:errcheck
 
-	return c.SortFavoriteCasts(newCasts)
+	if err := c.SortFavoriteCasts(ctx, newCasts); err != nil {
+		return fmt.Errorf("error on SortFavoriteCasts(): %w", err)
+	}
+
+	return nil
 }
 
 func (r *RestoreFavoriteCasts) readCasts(reader io.Reader) []*cityheaven.Cast {

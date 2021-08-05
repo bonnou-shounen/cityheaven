@@ -1,6 +1,7 @@
 package cityheaven
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -15,23 +16,22 @@ type Client struct {
 }
 
 func NewClient() *Client {
+	u, _ := url.Parse("https://www.cityheaven.net/")
 	jar, _ := cookiejar.New(nil)
+	jar.SetCookies(u, []*http.Cookie{{}})
 
 	return &Client{
 		http: &http.Client{Jar: jar},
 	}
 }
 
-func (c *Client) Login(id, password string) error {
+func (c *Client) Login(ctx context.Context, id, password string) error {
 	values := url.Values{
 		"user": []string{id},
 		"pass": []string{password},
 	}
 
-	u, _ := url.Parse("https://www.cityheaven.net/")
-	c.http.Jar.SetCookies(u, []*http.Cookie{{}})
-
-	resp, err := c.http.PostForm("https://www.cityheaven.net/tokyo/loginajax/", values)
+	resp, err := c.postRaw(ctx, "https://www.cityheaven.net/tokyo/loginajax/", values.Encode())
 	if err != nil {
 		return err
 	}
@@ -48,8 +48,8 @@ func (c *Client) Login(id, password string) error {
 	return nil
 }
 
-func (c *Client) get(strURL string, values url.Values) error {
-	resp, err := c.getRaw(strURL, values)
+func (c *Client) get(ctx context.Context, strURL string, values url.Values) error {
+	resp, err := c.getRaw(ctx, strURL, values.Encode())
 	if err != nil {
 		return err
 	}
@@ -58,18 +58,44 @@ func (c *Client) get(strURL string, values url.Values) error {
 	return nil
 }
 
-func (c *Client) getRaw(strURL string, values url.Values) (*http.Response, error) {
-	return c.http.Get(fmt.Sprint(strURL, "?", values.Encode()))
-}
-
-func (c *Client) post(strURL, body string) error {
-	resp, err := c.http.Post(strURL, "application/x-www-form-urlencoded", strings.NewReader(body))
+func (c *Client) post(ctx context.Context, strURL string, values url.Values) error { //nolint:unused
+	resp, err := c.postRaw(ctx, strURL, values.Encode())
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
 	return nil
+}
+
+func (c *Client) getRaw(ctx context.Context, strURL string, query string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprint(strURL, "?", query), nil)
+	if err != nil {
+		return nil, fmt.Errorf("error on NewRequest(): %w", err)
+	}
+
+	resp, err := c.http.Do(req.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error on Do(): %w", err)
+	}
+
+	return resp, nil
+}
+
+func (c *Client) postRaw(ctx context.Context, strURL string, form string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodPost, strURL, strings.NewReader(form))
+	if err != nil {
+		return nil, fmt.Errorf("error on NewRequest(): %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+
+	resp, err := c.http.Do(req.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("error on Do(): %w", err)
+	}
+
+	return resp, nil
 }
 
 func (c *Client) parseNumber(str, prefix, suffix string) int {

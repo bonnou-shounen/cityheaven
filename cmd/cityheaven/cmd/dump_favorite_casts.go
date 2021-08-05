@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -12,20 +13,22 @@ type DumpFavoriteCasts struct {
 }
 
 func (d *DumpFavoriteCasts) Run() error {
-	c, err := util.NewLoggedClient()
+	ctx := context.Background()
+
+	c, err := util.NewLoggedClient(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("error on NewLoggedClient(): %w", err)
 	}
 
-	casts, err := c.GetFavoriteCasts()
+	casts, err := c.GetFavoriteCasts(ctx)
 	if err != nil {
-		return err
+		return fmt.Errorf("error on GetFavoriteCasts(): %w", err)
 	}
 
 	for _, cast := range casts {
 		var favCount int
 		if !d.NoFav {
-			favCount, _ = c.GetFavoriteCount(cast)
+			favCount, _ = c.GetFavoriteCount(ctx, cast)
 		}
 
 		fmt.Fprintf(os.Stdout, "%d\t%d\t%d\t%s\t%s\n", cast.ID, cast.ShopID, favCount, cast.Name, cast.ShopName)

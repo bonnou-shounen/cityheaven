@@ -1,6 +1,7 @@
 package cityheaven
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -9,17 +10,17 @@ import (
 	"github.com/remeh/sizedwaitgroup"
 )
 
-func (c *Client) GetShopURL(area, shop string) (string, error) {
+func (c *Client) GetShopURL(ctx context.Context, area, shop string) (string, error) {
 	req, err := http.NewRequest(
-		"HEAD",
+		http.MethodHead,
 		fmt.Sprint("https://www.cityheaven.net/", area, "/A0000/A000000/", shop, "/"),
 		nil,
 	)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error on NewRequest(): %w", err)
 	}
 
-	resp, _ := http.DefaultTransport.RoundTrip(req)
+	resp, _ := http.DefaultTransport.RoundTrip(req.WithContext(ctx))
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusMovedPermanently {
@@ -38,10 +39,10 @@ type castsPageInfo struct {
 	ShopName string
 }
 
-func (c *Client) GetShopCasts(strURL string) ([]*Cast, error) {
+func (c *Client) GetShopCasts(ctx context.Context, strURL string) ([]*Cast, error) {
 	var info castsPageInfo
 
-	casts, err := c.getShopCastsOnPage(strURL, 1, &info)
+	casts, err := c.getShopCastsOnPage(ctx, strURL, 1, &info)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +57,7 @@ func (c *Client) GetShopCasts(strURL string) ([]*Cast, error) {
 			go func(page int) {
 				defer swg.Done()
 
-				castsOnPage[page], _ = c.getShopCastsOnPage(strURL, page, nil)
+				castsOnPage[page], _ = c.getShopCastsOnPage(ctx, strURL, page, nil)
 			}(page)
 		}
 		swg.Wait()
@@ -74,8 +75,8 @@ func (c *Client) GetShopCasts(strURL string) ([]*Cast, error) {
 	return casts, nil
 }
 
-func (c *Client) getShopCastsOnPage(strURL string, page int, pInfo *castsPageInfo) ([]*Cast, error) {
-	resp, err := c.http.Get(fmt.Sprint(strURL, "girllist/", page, "/"))
+func (c *Client) getShopCastsOnPage(ctx context.Context, strURL string, page int, pInfo *castsPageInfo) ([]*Cast, error) { //nolint:lll
+	resp, err := c.getRaw(ctx, fmt.Sprint(strURL, "girllist/", page, "/"), "")
 	if err != nil {
 		return nil, err
 	}
@@ -83,7 +84,7 @@ func (c *Client) getShopCastsOnPage(strURL string, page int, pInfo *castsPageInf
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error on NewDocumentFromReader(): %w", err)
 	}
 
 	div := doc.Find("div.girllistimg")

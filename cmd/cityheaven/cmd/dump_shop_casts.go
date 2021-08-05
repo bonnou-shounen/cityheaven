@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"os"
 	"strings"
@@ -22,17 +23,18 @@ func (d *DumpShopCasts) Run() error {
 		return err
 	}
 
+	ctx := context.Background()
 	c := cityheaven.NewClient()
 
-	casts, err := c.GetShopCasts(strURL)
+	casts, err := c.GetShopCasts(ctx, strURL)
 	if err != nil {
-		return err
+		return fmt.Errorf(`error on GetShopCasts("%s"): %w`, strURL, err)
 	}
 
 	for _, cast := range casts {
 		var favCount int
 		if !d.NoFav {
-			favCount, _ = c.GetFavoriteCount(cast)
+			favCount, _ = c.GetFavoriteCount(ctx, cast)
 		}
 
 		fmt.Fprintf(os.Stdout, "%d\t%d\t%d\t%s\t%s\n", cast.ID, cast.ShopID, favCount, cast.Name, cast.ShopName)
@@ -60,11 +62,12 @@ func (d *DumpShopCasts) getURL() (string, error) {
 		}
 	}
 
+	ctx := context.Background()
 	c := cityheaven.NewClient()
 
-	strURL, err := c.GetShopURL(area, shop)
+	strURL, err := c.GetShopURL(ctx, area, shop)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf(`error on GetShopURL("%s", "%s"): %w`, area, shop, err)
 	}
 
 	return strURL, nil

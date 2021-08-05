@@ -2,6 +2,7 @@ package cityheaven
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -10,8 +11,8 @@ import (
 	"github.com/PuerkitoBio/goquery"
 )
 
-func (c *Client) GetFavoriteCasts() ([]*Cast, error) {
-	resp, err := c.http.Get("https://www.cityheaven.net/tt/community/ABEditFavoriteGirl/")
+func (c *Client) GetFavoriteCasts(ctx context.Context) ([]*Cast, error) {
+	resp, err := c.getRaw(ctx, "https://www.cityheaven.net/tt/community/ABEditFavoriteGirl/", "")
 	if err != nil {
 		return nil, err
 	}
@@ -19,7 +20,7 @@ func (c *Client) GetFavoriteCasts() ([]*Cast, error) {
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error on NewDocumentFromReader(): %w", err)
 	}
 
 	var casts []*Cast
@@ -50,23 +51,23 @@ func (c *Client) GetFavoriteCasts() ([]*Cast, error) {
 	return casts, nil
 }
 
-func (c *Client) AddFavoriteCast(cast *Cast) error {
+func (c *Client) AddFavoriteCast(ctx context.Context, cast *Cast) error {
 	values := url.Values{
 		"girlId": []string{fmt.Sprint(cast.ID)},
 	}
 
-	return c.get("https://www.cityheaven.net/tokyo/A0000/A000000/a/okiniiri/", values)
+	return c.get(ctx, "https://www.cityheaven.net/tokyo/A0000/A000000/a/okiniiri/", values)
 }
 
-func (c *Client) DeleteFavoriteCast(cast *Cast) error {
-	return c.DeleteFavoriteCasts([]*Cast{cast})
+func (c *Client) DeleteFavoriteCast(ctx context.Context, cast *Cast) error {
+	return c.DeleteFavoriteCasts(ctx, []*Cast{cast})
 }
 
-func (c *Client) AddFavoriteCasts(casts []*Cast) error {
+func (c *Client) AddFavoriteCasts(ctx context.Context, casts []*Cast) error {
 	var anyErr error
 
 	for i := len(casts) - 1; i >= 0; i-- {
-		err := c.AddFavoriteCast(casts[i])
+		err := c.AddFavoriteCast(ctx, casts[i])
 		if err != nil {
 			anyErr = err
 		}
@@ -75,7 +76,7 @@ func (c *Client) AddFavoriteCasts(casts []*Cast) error {
 	return anyErr
 }
 
-func (c *Client) DeleteFavoriteCasts(casts []*Cast) error {
+func (c *Client) DeleteFavoriteCasts(ctx context.Context, casts []*Cast) error {
 	if len(casts) == 0 {
 		return nil
 	}
@@ -86,10 +87,10 @@ func (c *Client) DeleteFavoriteCasts(casts []*Cast) error {
 		values.Add(fmt.Sprint("data_", cast.ID), "削除する")
 	}
 
-	return c.get("https://www.cityheaven.net/tt/community/ABEditFavoriteGirl/", values)
+	return c.get(ctx, "https://www.cityheaven.net/tt/community/ABEditFavoriteGirl/", values)
 }
 
-func (c *Client) SortFavoriteCasts(casts []*Cast) error {
+func (c *Client) SortFavoriteCasts(ctx context.Context, casts []*Cast) error {
 	if len(casts) == 0 {
 		return nil
 	}
@@ -100,16 +101,22 @@ func (c *Client) SortFavoriteCasts(casts []*Cast) error {
 		queryB.WriteString(fmt.Sprintf("&sort_girl[%d]=1", cast.ID))
 	}
 
-	return c.post("https://www.cityheaven.net/y/community/ABEditFavoriteGirl/", queryB.String())
+	resp, err := c.postRaw(ctx, "https://www.cityheaven.net/y/community/ABEditFavoriteGirl/", queryB.String())
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return nil
 }
 
-func (c *Client) GetFavoriteCount(cast *Cast) (int, error) {
+func (c *Client) GetFavoriteCount(ctx context.Context, cast *Cast) (int, error) {
 	values := url.Values{
 		"girl_id":  []string{fmt.Sprint(cast.ID)},
 		"commu_id": []string{fmt.Sprint(cast.ShopID)},
 	}
 
-	resp, err := c.getRaw("https://www.cityheaven.net/api/myheaven/v1/getgirlfavcnt/", values)
+	resp, err := c.getRaw(ctx, "https://www.cityheaven.net/api/myheaven/v1/getgirlfavcnt/", values.Encode())
 	if err != nil {
 		return 0, err
 	}
@@ -120,12 +127,12 @@ func (c *Client) GetFavoriteCount(cast *Cast) (int, error) {
 
 	err = decoder.Decode(&res)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("error on Decode(): %w", err)
 	}
 
 	count, err := strconv.Atoi(res.Cnt)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf(`error on Atoi("%s"): %w`, res.Cnt, err)
 	}
 
 	return count, nil
