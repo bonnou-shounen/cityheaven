@@ -11,10 +11,10 @@ import (
 )
 
 type DumpShopCasts struct {
-	NoFav bool   `help:"skip counts"`
-	Area  string `help:"area name in URL (default: tokyo)"`
-	Shop  string `xor:"shop-url" help:"shop name in URL"`
-	URL   string `xor:"shop-url" help:"URL of shop page"`
+	NoFav bool   `help:"skip counting favorites"`
+	Area  string `help:"area part in shop URL"`
+	Shop  string `xor:"shop-url" help:"name part in shop URL"`
+	URL   string `xor:"shop-url" help:"the shop URL"`
 }
 
 func (d *DumpShopCasts) Run() error {
@@ -44,21 +44,24 @@ func (d *DumpShopCasts) Run() error {
 }
 
 func (d *DumpShopCasts) getURL() (string, error) {
-	shop := d.Shop
 	area := d.Area
+	if area == "" {
+		area = os.Getenv("CITYHEAVEN_AREA")
+	}
 
-	if shop != "" {
-		if area == "" {
-			area = "tokyo"
-		}
-	} else {
+	if area == "" {
+		area = "tokyo"
+	}
+
+	shop := d.Shop
+	if shop == "" {
 		url := d.URL
 		if url == "" {
 			url = d.readURL()
 		}
 
 		if err := d.parseURL(url, &area, &shop); err != nil {
-			return "", err
+			return "", fmt.Errorf(`error on parseURL("%s"): %w`, url, err)
 		}
 	}
 
@@ -82,16 +85,14 @@ func (d *DumpShopCasts) readURL() string {
 }
 
 func (d *DumpShopCasts) parseURL(str string, pArea, pShop *string) error {
-	ParseError := fmt.Errorf("parse URL failed: [%s]", str)
-
 	iAreaEnd := strings.Index(str, "/A")
 	if iAreaEnd < 0 {
-		return ParseError
+		return fmt.Errorf(`not found area end "/A"`)
 	}
 
 	iArea := strings.LastIndex(str[:iAreaEnd], "/")
 	if iArea < 0 {
-		return ParseError
+		return fmt.Errorf(`not found area start "/"`)
 	}
 
 	*pArea = str[iArea+1 : iAreaEnd]
@@ -100,7 +101,7 @@ func (d *DumpShopCasts) parseURL(str string, pArea, pShop *string) error {
 
 	iShopLen := strings.Index(str[iShop:], "/")
 	if iShopLen < 0 {
-		return ParseError
+		return fmt.Errorf(`not found shop end "/"`)
 	}
 
 	*pShop = str[iShop : iShop+iShopLen]

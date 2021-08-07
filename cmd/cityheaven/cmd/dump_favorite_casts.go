@@ -9,7 +9,7 @@ import (
 )
 
 type DumpFavoriteCasts struct {
-	NoFav bool `help:"skip counts"`
+	NoFav bool `help:"skip counting favorites"`
 }
 
 func (d *DumpFavoriteCasts) Run() error {

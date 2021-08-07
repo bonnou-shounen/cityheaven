@@ -1,8 +1,8 @@
 package cmd
 
 type Option struct {
-	Login    string `short:"l" help:"Mail address."`
-	Password string `short:"p" help:"Password."`
+	Login    string `short:"l" help:"mail address"`
+	Password string `short:"p" help:"password"`
 }
 
 //nolint:maligned
