@@ -78,7 +78,7 @@ func (c *Client) GetShopCasts(ctx context.Context, strURL string) ([]*Cast, erro
 func (c *Client) getShopCastsOnPage(ctx context.Context, strURL string, page int, pInfo *castsPageInfo) ([]*Cast, error) { //nolint:lll
 	resp, err := c.getRaw(ctx, fmt.Sprint(strURL, "girllist/", page, "/"), "")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error on getRaw(): %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -130,9 +130,9 @@ func (c *Client) getShopCastsOnPage(ctx context.Context, strURL string, page int
 func (c *Client) getShopCastsOnOldPage(doc *goquery.Document, pInfo *castsPageInfo) ([]*Cast, error) {
 	var casts []*Cast
 
-	doc.Find("ul#girl_list").Each(func(_ int, li *goquery.Selection) {
-		castName, _ := li.Find("p.girl_name a").Attr("title")
-		href, _ := li.Find("div.girl_img a").Attr("href")
+	doc.Find("p.girl_name a").Each(func(_ int, a *goquery.Selection) {
+		castName, _ := a.Attr("title")
+		href, _ := a.Attr("href")
 		castID := c.parseNumber(href, "girlid-", "/")
 
 		if castID != 0 && castName != "" {
