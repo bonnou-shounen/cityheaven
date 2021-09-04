@@ -130,7 +130,7 @@ func (c *Client) getShopCastsOnPage(ctx context.Context, strURL string, page int
 func (c *Client) getShopCastsOnOldPage(doc *goquery.Document, pInfo *castsPageInfo) ([]*Cast, error) {
 	var casts []*Cast
 
-	doc.Find("p.girl_name a").Each(func(_ int, a *goquery.Selection) {
+	doc.Find("a").Each(func(_ int, a *goquery.Selection) {
 		castName, _ := a.Attr("title")
 		href, _ := a.Attr("href")
 		castID := c.parseNumber(href, "girlid-", "/")
