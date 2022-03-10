@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/alecthomas/kong"
-
 	"github.com/bonnou-shounen/cityheaven/cmd/cityheaven/cmd"
 )
 
@@ -13,7 +12,7 @@ func main() {
 	ctx := kong.Parse(
 		&arg,
 		kong.Name("cityheaven"),
-		kong.Vars{"version": "0.0.14"},
+		kong.Vars{"version": "0.0.15"},
 		kong.ShortUsageOnError(),
 	)
 

@@ -71,12 +71,12 @@ func (c *Client) post(ctx context.Context, strURL string, values url.Values) err
 func (c *Client) getRaw(ctx context.Context, strURL string, query string) (*http.Response, error) {
 	req, err := http.NewRequest(http.MethodGet, fmt.Sprint(strURL, "?", query), nil)
 	if err != nil {
-		return nil, fmt.Errorf("error on NewRequest(): %w", err)
+		return nil, fmt.Errorf("on NewRequest(): %w", err)
 	}
 
 	resp, err := c.http.Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, fmt.Errorf("error on Do(): %w", err)
+		return nil, fmt.Errorf("on http.Do(): %w", err)
 	}
 
 	return resp, nil
@@ -85,14 +85,14 @@ func (c *Client) getRaw(ctx context.Context, strURL string, query string) (*http
 func (c *Client) postRaw(ctx context.Context, strURL string, form string) (*http.Response, error) {
 	req, err := http.NewRequest(http.MethodPost, strURL, strings.NewReader(form))
 	if err != nil {
-		return nil, fmt.Errorf("error on NewRequest(): %w", err)
+		return nil, fmt.Errorf("on NewRequest(): %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 
 	resp, err := c.http.Do(req.WithContext(ctx))
 	if err != nil {
-		return nil, fmt.Errorf("error on Do(): %w", err)
+		return nil, fmt.Errorf("on http.Do(): %w", err)
 	}
 
 	return resp, nil

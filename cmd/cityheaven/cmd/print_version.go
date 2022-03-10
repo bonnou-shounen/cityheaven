@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/alecthomas/kong"
 )
@@ -9,7 +10,7 @@ import (
 type PrintVersion struct{}
 
 func (PrintVersion) Run(vars kong.Vars) error {
-	fmt.Println(vars["version"])
+	fmt.Fprintf(os.Stdout, "%s\n", vars["version"])
 
 	return nil
 }

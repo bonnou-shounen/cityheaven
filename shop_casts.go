@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/remeh/sizedwaitgroup"
+	"github.com/jesse0michael/errgroup"
 )
 
 func (c *Client) GetShopURL(ctx context.Context, area, shop string) (string, error) {
@@ -17,7 +17,7 @@ func (c *Client) GetShopURL(ctx context.Context, area, shop string) (string, err
 		nil,
 	)
 	if err != nil {
-		return "", fmt.Errorf("error on NewRequest(): %w", err)
+		return "", fmt.Errorf("on NewRequest(): %w", err)
 	}
 
 	resp, _ := http.DefaultTransport.RoundTrip(req.WithContext(ctx))
@@ -48,19 +48,28 @@ func (c *Client) GetShopCasts(ctx context.Context, strURL string) ([]*Cast, erro
 	}
 
 	if info.LastPage >= 2 {
+		seg, segCtx := errgroup.WithContext(ctx, 3)
+
 		castsOnPage := make([][]*Cast, info.LastPage+1)
-		swg := sizedwaitgroup.New(3)
 
 		for page := 2; page <= info.LastPage; page++ {
-			swg.Add()
+			page := page
 
-			go func(page int) {
-				defer swg.Done()
+			seg.Go(func() error {
+				casts, err := c.getShopCastsOnPage(segCtx, strURL, page, nil)
+				if err != nil {
+					return fmt.Errorf("on getShopCastsOnPage(%d): %w", page, err)
+				}
 
-				castsOnPage[page], _ = c.getShopCastsOnPage(ctx, strURL, page, nil)
-			}(page)
+				castsOnPage[page] = casts
+
+				return nil
+			})
 		}
-		swg.Wait()
+
+		if err := seg.Wait(); err != nil {
+			return nil, fmt.Errorf("on a goroutine: %w", err)
+		}
 
 		for page := 2; page <= info.LastPage; page++ {
 			casts = append(casts, castsOnPage[page]...)
@@ -78,13 +87,13 @@ func (c *Client) GetShopCasts(ctx context.Context, strURL string) ([]*Cast, erro
 func (c *Client) getShopCastsOnPage(ctx context.Context, strURL string, page int, pInfo *castsPageInfo) ([]*Cast, error) { //nolint:lll
 	resp, err := c.getRaw(ctx, fmt.Sprint(strURL, "girllist/", page, "/"), "")
 	if err != nil {
-		return nil, fmt.Errorf("error on getRaw(): %w", err)
+		return nil, fmt.Errorf("on getRaw(): %w", err)
 	}
 	defer resp.Body.Close()
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("error on NewDocumentFromReader(): %w", err)
+		return nil, fmt.Errorf("on NewDocumentFromReader(): %w", err)
 	}
 
 	div := doc.Find("div.girllistimg")
@@ -116,8 +125,10 @@ func (c *Client) getShopCastsOnPage(ctx context.Context, strURL string, page int
 			shopID := c.parseNumber(scr.Text(), `{'shop_id':'`, `'}`)
 			if shopID > 0 {
 				pInfo.ShopID = shopID
+
 				return false
 			}
+
 			return true
 		})
 
@@ -152,8 +163,10 @@ func (c *Client) getShopCastsOnOldPage(doc *goquery.Document, pInfo *castsPageIn
 			shopID := c.parseNumber(scr.Text(), `{'shop_id':'`, `'}`)
 			if shopID > 0 {
 				pInfo.ShopID = shopID
+
 				return false
 			}
+
 			return true
 		})
 

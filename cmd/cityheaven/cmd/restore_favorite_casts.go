@@ -20,14 +20,14 @@ func (r *RestoreFavoriteCasts) Run() error {
 
 	ctx := context.Background()
 
-	c, err := util.NewLoggedClient(ctx)
+	client, err := util.NewLoggedClient(ctx)
 	if err != nil {
-		return fmt.Errorf("error on NewLoggedClient(): %w", err)
+		return fmt.Errorf("on NewLoggedClient(): %w", err)
 	}
 
-	curCasts, err := c.GetFavoriteCasts(ctx)
+	curCasts, err := client.GetFavoriteCasts(ctx)
 	if err != nil {
-		return fmt.Errorf("error on GetFacoriteCasts(): %w", err)
+		return fmt.Errorf("on GetFacoriteCasts(): %w", err)
 	}
 
 	if r.areSame(curCasts, newCasts) {
@@ -35,11 +35,11 @@ func (r *RestoreFavoriteCasts) Run() error {
 	}
 
 	delCasts, addCasts := r.castsDiff(curCasts, newCasts)
-	c.DeleteFavoriteCasts(ctx, delCasts) //nolint:errcheck
-	c.AddFavoriteCasts(ctx, addCasts)    //nolint:errcheck
+	client.DeleteFavoriteCasts(ctx, delCasts) //nolint:errcheck
+	client.AddFavoriteCasts(ctx, addCasts)    //nolint:errcheck
 
-	if err := c.SortFavoriteCasts(ctx, newCasts); err != nil {
-		return fmt.Errorf("error on SortFavoriteCasts(): %w", err)
+	if err := client.SortFavoriteCasts(ctx, newCasts); err != nil {
+		return fmt.Errorf("on SortFavoriteCasts(): %w", err)
 	}
 
 	return nil

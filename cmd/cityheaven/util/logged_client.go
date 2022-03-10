@@ -6,46 +6,45 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/bonnou-shounen/cityheaven"
 	libnetrc "github.com/jdxcode/netrc"
-
-	cityheaven "github.com/bonnou-shounen/cityheaven"
 )
 
 func NewLoggedClient(ctx context.Context) (*cityheaven.Client, error) {
-	id, password := getCredential()
-	if id == "" || password == "" {
+	loginID, password := getCredential()
+	if loginID == "" || password == "" {
 		return nil, errors.New("missing credentials")
 	}
 
 	client := cityheaven.NewClient()
 
-	err := client.Login(ctx, id, password)
+	err := client.Login(ctx, loginID, password)
 	if err != nil {
-		return nil, fmt.Errorf(`error on Login("%s", "***"): %w`, id, err)
+		return nil, fmt.Errorf(`on Login("%s", "***"): %w`, loginID, err)
 	}
 
 	return client, nil
 }
 
-func getCredential() (id, password string) {
+func getCredential() (loginID, password string) {
 	getters := []func() (string, string){
 		fromEnv,
 		fromNetrc,
 	}
 
 	for _, getter := range getters {
-		if id != "" && password != "" {
+		if loginID != "" && password != "" {
 			return
 		}
 
-		i, p := getter()
+		id, pwd := getter()
 
-		if id == "" {
-			id = i
+		if loginID == "" {
+			loginID = id
 		}
 
 		if password == "" {
-			password = p
+			password = pwd
 		}
 	}
 
@@ -91,19 +90,13 @@ func getNetrc() *libnetrc.Netrc {
 }
 
 func getNetrcPath() string {
-	path := os.Getenv("NETRC")
-	if path != "" {
-		return path
+	for _, name := range []string{"NETRC", "CURLOPT_NETRC_FILE"} {
+		if path := os.Getenv(name); path != "" {
+			return path
+		}
 	}
 
-	path = os.Getenv("CURLOPT_NETRC_FILE")
-
-	if path != "" {
-		return path
-	}
-
-	dir := os.Getenv("HOME")
-	if dir != "" {
+	if dir := os.Getenv("HOME"); dir != "" {
 		return dir + "/.netrc"
 	}
 

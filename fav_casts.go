@@ -20,7 +20,7 @@ func (c *Client) GetFavoriteCasts(ctx context.Context) ([]*Cast, error) {
 
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("error on NewDocumentFromReader(): %w", err)
+		return nil, fmt.Errorf("on NewDocumentFromReader(): %w", err)
 	}
 
 	var casts []*Cast
@@ -127,12 +127,12 @@ func (c *Client) GetFavoriteCount(ctx context.Context, cast *Cast) (int, error) 
 
 	err = decoder.Decode(&res)
 	if err != nil {
-		return 0, fmt.Errorf("error on Decode(): %w", err)
+		return 0, fmt.Errorf("on Decode(): %w", err)
 	}
 
 	count, err := strconv.Atoi(res.Cnt)
 	if err != nil {
-		return 0, fmt.Errorf(`error on Atoi("%s"): %w`, res.Cnt, err)
+		return 0, fmt.Errorf(`on Atoi("%s"): %w`, res.Cnt, err)
 	}
 
 	return count, nil

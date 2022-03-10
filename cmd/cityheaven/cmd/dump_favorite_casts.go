@@ -15,20 +15,20 @@ type DumpFavoriteCasts struct {
 func (d *DumpFavoriteCasts) Run() error {
 	ctx := context.Background()
 
-	c, err := util.NewLoggedClient(ctx)
+	client, err := util.NewLoggedClient(ctx)
 	if err != nil {
-		return fmt.Errorf("error on NewLoggedClient(): %w", err)
+		return fmt.Errorf("on NewLoggedClient(): %w", err)
 	}
 
-	casts, err := c.GetFavoriteCasts(ctx)
+	casts, err := client.GetFavoriteCasts(ctx)
 	if err != nil {
-		return fmt.Errorf("error on GetFavoriteCasts(): %w", err)
+		return fmt.Errorf("on GetFavoriteCasts(): %w", err)
 	}
 
 	for _, cast := range casts {
 		var favCount int
 		if !d.NoFav {
-			favCount, _ = c.GetFavoriteCount(ctx, cast)
+			favCount, _ = client.GetFavoriteCount(ctx, cast)
 		}
 
 		fmt.Fprintf(os.Stdout, "%d\t%d\t%d\t%s\t%s\n", cast.ID, cast.ShopID, favCount, cast.Name, cast.ShopName)
