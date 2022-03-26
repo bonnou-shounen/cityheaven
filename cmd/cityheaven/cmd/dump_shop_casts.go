@@ -11,10 +11,11 @@ import (
 )
 
 type DumpShopCasts struct {
-	NoFav bool   `help:"skip counting favorites"`
-	Area  string `help:"area part in shop URL"`
-	Shop  string `xor:"shop-url" help:"name part in shop URL"`
-	URL   string `xor:"shop-url" help:"the shop URL"`
+	NoFav     bool   `help:"skip counting favorites"`
+	Attendees bool   `help:"only attendees"`
+	Area      string `help:"area part in shop URL"`
+	Shop      string `xor:"shop-url" help:"name part in shop URL"`
+	URL       string `xor:"shop-url" help:"the shop URL"`
 }
 
 func (d *DumpShopCasts) Run() error {
@@ -26,18 +27,35 @@ func (d *DumpShopCasts) Run() error {
 	ctx := context.Background()
 	client := cityheaven.NewClient()
 
-	casts, err := client.GetShopCasts(ctx, strURL)
-	if err != nil {
-		return fmt.Errorf(`on GetShopCasts("%s"): %w`, strURL, err)
+	var casts []*cityheaven.Cast
+
+	if d.Attendees {
+		casts, err = client.GetShopAttendees(ctx, strURL)
+		if err != nil {
+			return fmt.Errorf(`on GetShopAtendees("%s"): %w`, strURL, err)
+		}
+	} else {
+		casts, err = client.GetShopCasts(ctx, strURL)
+		if err != nil {
+			return fmt.Errorf(`on GetShopCasts("%s"): %w`, strURL, err)
+		}
 	}
 
 	for _, cast := range casts {
-		var favCount int
+		line := fmt.Sprintf("%d\t%d", cast.ID, cast.ShopID)
+
 		if !d.NoFav {
-			favCount, _ = client.GetFavoriteCount(ctx, cast)
+			favCount, _ := client.GetFavoriteCount(ctx, cast)
+			line += fmt.Sprintf("\t%d", favCount)
 		}
 
-		fmt.Fprintf(os.Stdout, "%d\t%d\t%d\t%s\t%s\n", cast.ID, cast.ShopID, favCount, cast.Name, cast.ShopName)
+		if d.Attendees {
+			line += fmt.Sprintf("\t%s", cast.NextStart)
+		}
+
+		line += fmt.Sprintf("\t%s\t%s", cast.Name, cast.ShopName)
+
+		fmt.Fprintln(os.Stdout, line)
 	}
 
 	return nil
