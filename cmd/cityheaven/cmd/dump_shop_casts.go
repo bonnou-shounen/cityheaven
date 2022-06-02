@@ -42,18 +42,18 @@ func (d *DumpShopCasts) Run() error {
 	}
 
 	for _, cast := range casts {
-		line := fmt.Sprintf("%d\t%d", cast.ID, cast.ShopID)
+		line := fmt.Sprint(cast.ID, "\t", cast.ShopID)
 
 		if !d.NoFav {
 			favCount, _ := client.GetFavoriteCount(ctx, cast)
-			line += fmt.Sprintf("\t%d", favCount)
+			line += fmt.Sprint("\t", favCount)
 		}
 
 		if d.Attendees {
-			line += fmt.Sprintf("\t%s", cast.NextStart)
+			line += fmt.Sprint("\t", cast.NextStart)
 		}
 
-		line += fmt.Sprintf("\t%s\t%s", cast.Name, cast.ShopName)
+		line += fmt.Sprint("\t", cast.Name, "\t", cast.ShopName)
 
 		fmt.Fprintln(os.Stdout, line)
 	}

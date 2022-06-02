@@ -9,9 +9,11 @@ import (
 )
 
 func (c *Client) GetShopAttendees(ctx context.Context, strURL string) ([]*Cast, error) {
-	resp, err := c.getRaw(ctx, fmt.Sprint(strURL, "attend/soon/"), "")
+	strURL = strURL + "attend/soon/"
+
+	resp, err := c.get(ctx, strURL, "")
 	if err != nil {
-		return nil, fmt.Errorf("on getRaw(): %w", err)
+		return nil, fmt.Errorf(`on get("%s"): %w`, strURL, err)
 	}
 	defer resp.Body.Close()
 
@@ -32,7 +34,7 @@ func (c *Client) GetShopAttendees(ctx context.Context, strURL string) ([]*Cast, 
 
 	var casts []*Cast
 
-	re := regexp.MustCompile(`\d{2}:\d{2}`) //nolint:varnamelen
+	re := regexp.MustCompile(`\d{2}:\d{2}`)
 
 	doc.Find("div.sugunavi_wrapper").Each(func(_ int, div *goquery.Selection) {
 		href, _ := div.Find("a").Attr("href")

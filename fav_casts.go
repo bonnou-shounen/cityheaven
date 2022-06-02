@@ -12,7 +12,7 @@ import (
 )
 
 func (c *Client) GetFavoriteCasts(ctx context.Context) ([]*Cast, error) {
-	resp, err := c.getRaw(ctx, "https://www.cityheaven.net/tt/community/ABEditFavoriteGirl/", "")
+	resp, err := c.get(ctx, "https://www.cityheaven.net/tt/community/ABEditFavoriteGirl/", "")
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +56,7 @@ func (c *Client) AddFavoriteCast(ctx context.Context, cast *Cast) error {
 		"girlId": []string{fmt.Sprint(cast.ID)},
 	}
 
-	return c.get(ctx, "https://www.cityheaven.net/tokyo/A0000/A000000/a/okiniiri/", values)
+	return c.getSimple(ctx, "https://www.cityheaven.net/tokyo/A0000/A000000/a/okiniiri/", values)
 }
 
 func (c *Client) DeleteFavoriteCast(ctx context.Context, cast *Cast) error {
@@ -64,16 +64,25 @@ func (c *Client) DeleteFavoriteCast(ctx context.Context, cast *Cast) error {
 }
 
 func (c *Client) AddFavoriteCasts(ctx context.Context, casts []*Cast) error {
-	var anyErr error
+	var firstErr error
+
+	var firstErrCast *Cast
 
 	for i := len(casts) - 1; i >= 0; i-- {
-		err := c.AddFavoriteCast(ctx, casts[i])
-		if err != nil {
-			anyErr = err
+		cast := casts[i]
+
+		err := c.AddFavoriteCast(ctx, cast)
+		if err != nil && firstErr == nil {
+			firstErr = err
+			firstErrCast = cast
 		}
 	}
 
-	return anyErr
+	if firstErr != nil {
+		return fmt.Errorf(`on first AddFacvoriteCast(%d=%s): %w`, firstErrCast.ID, firstErrCast.Name, firstErr)
+	}
+
+	return nil
 }
 
 func (c *Client) DeleteFavoriteCasts(ctx context.Context, casts []*Cast) error {
@@ -87,7 +96,7 @@ func (c *Client) DeleteFavoriteCasts(ctx context.Context, casts []*Cast) error {
 		values.Add(fmt.Sprint("data_", cast.ID), "削除する")
 	}
 
-	return c.get(ctx, "https://www.cityheaven.net/tt/community/ABEditFavoriteGirl/", values)
+	return c.getSimple(ctx, "https://www.cityheaven.net/tt/community/ABEditFavoriteGirl/", values)
 }
 
 func (c *Client) SortFavoriteCasts(ctx context.Context, casts []*Cast) error {
@@ -101,7 +110,7 @@ func (c *Client) SortFavoriteCasts(ctx context.Context, casts []*Cast) error {
 		queryB.WriteString(fmt.Sprintf("&sort_girl[%d]=1", cast.ID))
 	}
 
-	resp, err := c.postRaw(ctx, "https://www.cityheaven.net/y/community/ABEditFavoriteGirl/", queryB.String())
+	resp, err := c.post(ctx, "https://www.cityheaven.net/y/community/ABEditFavoriteGirl/", queryB.String())
 	if err != nil {
 		return err
 	}
@@ -116,7 +125,7 @@ func (c *Client) GetFavoriteCount(ctx context.Context, cast *Cast) (int, error) 
 		"commu_id": []string{fmt.Sprint(cast.ShopID)},
 	}
 
-	resp, err := c.getRaw(ctx, "https://www.cityheaven.net/api/myheaven/v1/getgirlfavcnt/", values.Encode())
+	resp, err := c.get(ctx, "https://www.cityheaven.net/api/myheaven/v1/getgirlfavcnt/", values.Encode())
 	if err != nil {
 		return 0, err
 	}

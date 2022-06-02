@@ -44,19 +44,19 @@ func (c *Client) GetShopCasts(ctx context.Context, strURL string) ([]*Cast, erro
 
 	casts, err := c.getShopCastsOnPage(ctx, strURL, 1, &info)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("on getShopCastsOnPage(1): %w", err)
 	}
 
 	if info.LastPage >= 2 {
-		seg, segCtx := errgroup.WithContext(ctx, 3)
+		eg, egCtx := errgroup.WithContext(ctx, 3)
 
 		castsOnPage := make([][]*Cast, info.LastPage+1)
 
 		for page := 2; page <= info.LastPage; page++ {
 			page := page
 
-			seg.Go(func() error {
-				casts, err := c.getShopCastsOnPage(segCtx, strURL, page, nil)
+			eg.Go(func() error {
+				casts, err := c.getShopCastsOnPage(egCtx, strURL, page, nil)
 				if err != nil {
 					return fmt.Errorf("on getShopCastsOnPage(%d): %w", page, err)
 				}
@@ -67,8 +67,8 @@ func (c *Client) GetShopCasts(ctx context.Context, strURL string) ([]*Cast, erro
 			})
 		}
 
-		if err := seg.Wait(); err != nil {
-			return nil, fmt.Errorf("on a goroutine: %w", err)
+		if err := eg.Wait(); err != nil {
+			return nil, fmt.Errorf("on goroutine: %w", err)
 		}
 
 		for page := 2; page <= info.LastPage; page++ {
@@ -85,9 +85,11 @@ func (c *Client) GetShopCasts(ctx context.Context, strURL string) ([]*Cast, erro
 }
 
 func (c *Client) getShopCastsOnPage(ctx context.Context, strURL string, page int, pInfo *castsPageInfo) ([]*Cast, error) { //nolint:lll
-	resp, err := c.getRaw(ctx, fmt.Sprint(strURL, "girllist/", page, "/"), "")
+	strURL = fmt.Sprint(strURL, "girllist/", page, "/")
+
+	resp, err := c.get(ctx, strURL, "")
 	if err != nil {
-		return nil, fmt.Errorf("on getRaw(): %w", err)
+		return nil, fmt.Errorf(`on get("%s"): %w`, strURL, err)
 	}
 	defer resp.Body.Close()
 

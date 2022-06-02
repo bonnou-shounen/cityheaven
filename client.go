@@ -31,7 +31,7 @@ func (c *Client) Login(ctx context.Context, id, password string) error {
 		"pass": []string{password},
 	}
 
-	resp, err := c.postRaw(ctx, "https://www.cityheaven.net/tokyo/loginajax/", values.Encode())
+	resp, err := c.post(ctx, "https://www.cityheaven.net/tokyo/loginajax/", values.Encode())
 	if err != nil {
 		return err
 	}
@@ -48,8 +48,8 @@ func (c *Client) Login(ctx context.Context, id, password string) error {
 	return nil
 }
 
-func (c *Client) get(ctx context.Context, strURL string, values url.Values) error {
-	resp, err := c.getRaw(ctx, strURL, values.Encode())
+func (c *Client) getSimple(ctx context.Context, strURL string, values url.Values) error {
+	resp, err := c.get(ctx, strURL, values.Encode())
 	if err != nil {
 		return err
 	}
@@ -58,18 +58,8 @@ func (c *Client) get(ctx context.Context, strURL string, values url.Values) erro
 	return nil
 }
 
-func (c *Client) post(ctx context.Context, strURL string, values url.Values) error { //nolint:unused
-	resp, err := c.postRaw(ctx, strURL, values.Encode())
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	return nil
-}
-
-func (c *Client) getRaw(ctx context.Context, strURL string, query string) (*http.Response, error) {
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprint(strURL, "?", query), nil)
+func (c *Client) get(ctx context.Context, strURL string, query string) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodGet, strURL+"?"+query, nil)
 	if err != nil {
 		return nil, fmt.Errorf("on NewRequest(): %w", err)
 	}
@@ -82,7 +72,7 @@ func (c *Client) getRaw(ctx context.Context, strURL string, query string) (*http
 	return resp, nil
 }
 
-func (c *Client) postRaw(ctx context.Context, strURL string, form string) (*http.Response, error) {
+func (c *Client) post(ctx context.Context, strURL string, form string) (*http.Response, error) {
 	req, err := http.NewRequest(http.MethodPost, strURL, strings.NewReader(form))
 	if err != nil {
 		return nil, fmt.Errorf("on NewRequest(): %w", err)

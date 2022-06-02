@@ -35,8 +35,14 @@ func (r *RestoreFavoriteCasts) Run() error {
 	}
 
 	delCasts, addCasts := r.castsDiff(curCasts, newCasts)
-	client.DeleteFavoriteCasts(ctx, delCasts) //nolint:errcheck
-	client.AddFavoriteCasts(ctx, addCasts)    //nolint:errcheck
+
+	if err := client.DeleteFavoriteCasts(ctx, delCasts); err != nil {
+		return fmt.Errorf("on DeleteFavoriteCasts(): %w", err)
+	}
+
+	if err := client.AddFavoriteCasts(ctx, addCasts); err != nil {
+		return fmt.Errorf("on AddFavoriteCasts(): %w", err)
+	}
 
 	if err := client.SortFavoriteCasts(ctx, newCasts); err != nil {
 		return fmt.Errorf("on SortFavoriteCasts(): %w", err)
@@ -90,8 +96,7 @@ func (r *RestoreFavoriteCasts) areSame(curCasts, newCasts []*cityheaven.Cast) bo
 	return true
 }
 
-//nolint:lll
-func (r *RestoreFavoriteCasts) castsDiff(curCasts, newCasts []*cityheaven.Cast) (delCasts, addCasts []*cityheaven.Cast) {
+func (r *RestoreFavoriteCasts) castsDiff(curCasts, newCasts []*cityheaven.Cast) (delCasts, addCasts []*cityheaven.Cast) { //nolint:lll,nonamedreturns
 	oldCasts := map[int]*cityheaven.Cast{}
 
 	for _, curCast := range curCasts {

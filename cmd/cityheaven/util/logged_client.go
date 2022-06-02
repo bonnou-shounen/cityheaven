@@ -26,15 +26,16 @@ func NewLoggedClient(ctx context.Context) (*cityheaven.Client, error) {
 	return client, nil
 }
 
-func getCredential() (loginID, password string) {
+func getCredential() (string, string) {
+	var loginID, password string
+
 	getters := []func() (string, string){
 		fromEnv,
 		fromNetrc,
 	}
-
 	for _, getter := range getters {
 		if loginID != "" && password != "" {
-			return
+			return "", ""
 		}
 
 		id, pwd := getter()
@@ -48,31 +49,31 @@ func getCredential() (loginID, password string) {
 		}
 	}
 
-	return
+	return loginID, password
 }
 
-func fromEnv() (id, password string) {
-	id = os.Getenv("CITYHEAVEN_LOGIN")
-	password = os.Getenv("CITYHEAVEN_PASSWORD")
+func fromEnv() (string, string) {
+	loginID := os.Getenv("CITYHEAVEN_LOGIN")
+	password := os.Getenv("CITYHEAVEN_PASSWORD")
 
-	return
+	return loginID, password
 }
 
-func fromNetrc() (id, password string) {
+func fromNetrc() (string, string) {
 	netrc := getNetrc()
 	if netrc == nil {
-		return
+		return "", ""
 	}
 
 	machine := netrc.Machine("www.cityheaven.net")
 	if machine == nil {
-		return
+		return "", ""
 	}
 
-	id = machine.Get("login")
-	password = machine.Get("password")
+	loginID := machine.Get("login")
+	password := machine.Get("password")
 
-	return
+	return loginID, password
 }
 
 func getNetrc() *libnetrc.Netrc {
