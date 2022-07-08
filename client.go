@@ -26,6 +26,10 @@ func NewClient() *Client {
 }
 
 func (c *Client) Login(ctx context.Context, id, password string) error {
+	if err := c.getSimple(ctx, "https://www.cityheaven.net/", nil); err != nil {
+		return err
+	}
+
 	values := url.Values{
 		"user": []string{id},
 		"pass": []string{password},
