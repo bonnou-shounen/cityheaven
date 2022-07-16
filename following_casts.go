@@ -106,25 +106,46 @@ func (c *Client) getFollowingCastsOnPage(ctx context.Context, page int, pLastPag
 	return casts, nil
 }
 
+type Shop = Cast
+
 func (c *Client) fillShopInfo(ctx context.Context, casts []*Cast) ([]*Cast, error) {
-	cache := map[string]*Cast{}
+	cache := map[string]*Shop{}
 
 	for _, cast := range casts {
-		var shop *Cast
+		if _, ok := cache[cast.PathURL]; !ok {
+			cache[cast.PathURL] = nil
+		}
+	}
 
-		if cached, ok := cache[cast.PathURL]; ok {
-			shop = cached
-		} else {
-			strURL := fmt.Sprint("https://www.cityheaven.net", cast.PathURL)
+	eg, egCtx := errgroup.WithContext(ctx, 3)
 
-			got, err := c.getShopFromPage(ctx, strURL)
-			if err != nil {
-				return nil, fmt.Errorf("on getShopFromPage(): %w", err)
-			}
-
-			shop, cache[cast.PathURL] = got, got
+	for pathURL, shop := range cache {
+		if shop != nil {
+			continue
 		}
 
+		pathURL := pathURL
+
+		eg.Go(func() error {
+			strURL := fmt.Sprint("https://www.cityheaven.net", pathURL)
+
+			shop, err := c.getShopFromPage(egCtx, strURL)
+			if err != nil {
+				return fmt.Errorf("on getShopFromPage(): %w", err)
+			}
+
+			cache[pathURL] = shop
+
+			return nil
+		})
+	}
+
+	if err := eg.Wait(); err != nil {
+		return nil, fmt.Errorf("on goroutine: %w", err)
+	}
+
+	for _, cast := range casts {
+		shop := cache[cast.PathURL]
 		cast.ShopID = shop.ShopID
 		cast.ShopName = shop.ShopName
 	}
@@ -132,7 +153,7 @@ func (c *Client) fillShopInfo(ctx context.Context, casts []*Cast) ([]*Cast, erro
 	return casts, nil
 }
 
-func (c *Client) getShopFromPage(ctx context.Context, strURL string) (*Cast, error) {
+func (c *Client) getShopFromPage(ctx context.Context, strURL string) (*Shop, error) {
 	resp, err := c.get(ctx, strURL, "pcmode=sp")
 	if err != nil {
 		return nil, fmt.Errorf(`on get("%s"): %w`, strURL, err)
@@ -144,7 +165,7 @@ func (c *Client) getShopFromPage(ctx context.Context, strURL string) (*Cast, err
 		return nil, fmt.Errorf("on NewDocumentFromReader(): %w", err)
 	}
 
-	shop := &Cast{}
+	shop := &Shop{}
 
 	doc.Find("a.shopinfobox-button").EachWithBreak(func(_ int, a *goquery.Selection) bool {
 		if shopID, ok := a.Attr("data-c_commu_id"); ok {
