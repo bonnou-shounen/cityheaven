@@ -9,7 +9,7 @@ import (
 )
 
 func (c *Client) GetShopAttendees(ctx context.Context, strURL string) ([]*Cast, error) {
-	strURL = strURL + "attend/soon/"
+	strURL += "attend/soon/"
 
 	resp, err := c.get(ctx, strURL, "")
 	if err != nil {

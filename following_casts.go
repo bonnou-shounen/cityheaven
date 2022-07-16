@@ -55,7 +55,7 @@ func (c *Client) GetFollowingCasts(ctx context.Context) ([]*Cast, error) {
 	return casts, nil
 }
 
-func (c *Client) getFollowingCastsOnPage(ctx context.Context, page int, pLastPage *int) ([]*Cast, error) { //nolint:lll
+func (c *Client) getFollowingCastsOnPage(ctx context.Context, page int, pLastPage *int) ([]*Cast, error) {
 	strURL := fmt.Sprint("https://www.cityheaven.net/tt/community/ABFollowGirlList/?start=", page)
 
 	resp, err := c.get(ctx, strURL, "")
@@ -88,10 +88,10 @@ func (c *Client) getFollowingCastsOnPage(ctx context.Context, page int, pLastPag
 		if castID != 0 && castName != "" {
 			casts = append(casts,
 				&Cast{
-					ID:   castID,
-					Name: castName,
-					ShopName: shopName,
-					PathURL: pathURL,
+					ID:           castID,
+					Name:         castName,
+					ShopName:     shopName,
+					PathURL:      pathURL,
 					MutualFollow: mutualFollow,
 				},
 			)

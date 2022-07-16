@@ -9,7 +9,7 @@ import (
 )
 
 type DumpFollowingCasts struct {
-	NoFav     bool   `help:"skip counting favorites"`
+	NoFav  bool `help:"skip counting favorites"`
 	Mutual bool `help:"only mutual followees"`
 }
 
