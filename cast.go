@@ -5,7 +5,8 @@ type Cast struct {
 	Name         string
 	ShopID       int
 	ShopName     string
+	URLPath      string
+	FavCount     int
 	NextStart    string
-	PathURL      string
 	MutualFollow bool
 }

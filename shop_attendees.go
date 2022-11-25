@@ -34,7 +34,7 @@ func (c *Client) GetShopAttendees(ctx context.Context, strURL string) ([]*Cast, 
 
 	var casts []*Cast
 
-	re := regexp.MustCompile(`\d{2}:\d{2}`)
+	re := regexp.MustCompile(`\d{1,2}:\d{2}`)
 
 	doc.Find("div.sugunavi_wrapper").Each(func(_ int, div *goquery.Selection) {
 		href, _ := div.Find("a").Attr("href")
@@ -45,6 +45,9 @@ func (c *Client) GetShopAttendees(ctx context.Context, strURL string) ([]*Cast, 
 		nextStart := string(re.Find(
 			[]byte(div.Find("div.title").Text()),
 		))
+		if len(nextStart) == 4 {
+			nextStart = "0" + nextStart
+		}
 
 		if castID != 0 && castName != "" && nextStart != "" {
 			casts = append(casts,

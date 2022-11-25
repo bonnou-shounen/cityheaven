@@ -78,9 +78,9 @@ func (c *Client) getFollowingCastsOnPage(ctx context.Context, page int, pLastPag
 		href, _ := li.Find("a").Attr("href")
 		castID := c.parseNumber(href, "girlid-", "/")
 
-		pathURL := href
+		urlPath := href
 		if i := strings.Index(href, "girlid-"); i > 0 {
-			pathURL = href[:i]
+			urlPath = href[:i]
 		}
 
 		mutualFollow := strings.HasPrefix(li.Find("div.btn_follo").Text(), "相互")
@@ -91,7 +91,7 @@ func (c *Client) getFollowingCastsOnPage(ctx context.Context, page int, pLastPag
 					ID:           castID,
 					Name:         castName,
 					ShopName:     shopName,
-					PathURL:      pathURL,
+					URLPath:      urlPath,
 					MutualFollow: mutualFollow,
 				},
 			)
@@ -112,8 +112,8 @@ func (c *Client) fillShopInfo(ctx context.Context, casts []*Cast) ([]*Cast, erro
 	cache := map[string]*Shop{}
 
 	for _, cast := range casts {
-		if _, ok := cache[cast.PathURL]; !ok {
-			cache[cast.PathURL] = nil
+		if _, ok := cache[cast.URLPath]; !ok {
+			cache[cast.URLPath] = nil
 		}
 	}
 
@@ -145,7 +145,7 @@ func (c *Client) fillShopInfo(ctx context.Context, casts []*Cast) ([]*Cast, erro
 	}
 
 	for _, cast := range casts {
-		shop := cache[cast.PathURL]
+		shop := cache[cast.URLPath]
 		cast.ShopID = shop.ShopID
 		cast.ShopName = shop.ShopName
 	}

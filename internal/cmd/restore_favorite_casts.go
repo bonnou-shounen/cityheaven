@@ -10,17 +10,17 @@ import (
 	"strings"
 
 	"github.com/bonnou-shounen/cityheaven"
-	"github.com/bonnou-shounen/cityheaven/cmd/cityheaven/util"
+	"github.com/bonnou-shounen/cityheaven/internal/util"
 )
 
 type RestoreFavoriteCasts struct{}
 
-func (r *RestoreFavoriteCasts) Run() error {
+func (r *RestoreFavoriteCasts) Run(o *CLI) error {
 	newCasts := r.readCasts(os.Stdin)
 
 	ctx := context.Background()
 
-	client, err := util.NewLoggedClient(ctx)
+	client, err := util.NewLoggedClient(ctx, o.Restore.Fav.LoginID, o.Restore.Fav.Password)
 	if err != nil {
 		return fmt.Errorf("on NewLoggedClient(): %w", err)
 	}
