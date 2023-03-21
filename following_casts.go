@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/jesse0michael/errgroup"
+	"golang.org/x/sync/errgroup"
 )
 
 func (c *Client) GetFollowingCasts(ctx context.Context) ([]*Cast, error) {
@@ -19,7 +19,8 @@ func (c *Client) GetFollowingCasts(ctx context.Context) ([]*Cast, error) {
 	}
 
 	if lastPage >= 2 {
-		eg, egCtx := errgroup.WithContext(ctx, 3)
+		eg, egCtx := errgroup.WithContext(ctx)
+		eg.SetLimit(3)
 
 		castsOnPage := make([][]*Cast, lastPage+1)
 
@@ -112,18 +113,13 @@ func (c *Client) fillShopInfo(ctx context.Context, casts []*Cast) ([]*Cast, erro
 	cache := map[string]*Shop{}
 
 	for _, cast := range casts {
-		if _, ok := cache[cast.URLPath]; !ok {
-			cache[cast.URLPath] = nil
-		}
+		cache[cast.URLPath] = nil
 	}
 
-	eg, egCtx := errgroup.WithContext(ctx, 3)
+	eg, egCtx := errgroup.WithContext(ctx)
+	eg.SetLimit(3)
 
-	for pathURL, shop := range cache {
-		if shop != nil {
-			continue
-		}
-
+	for pathURL := range cache {
 		pathURL := pathURL
 
 		eg.Go(func() error {
@@ -168,7 +164,7 @@ func (c *Client) getShopFromPage(ctx context.Context, strURL string) (*Shop, err
 	shop := &Shop{}
 
 	doc.Find("a.shopinfobox-button").EachWithBreak(func(_ int, a *goquery.Selection) bool {
-		if shopID, ok := a.Attr("data-c_commu_id"); ok {
+		if shopID, exists := a.Attr("data-c_commu_id"); exists {
 			shop.ShopID, _ = strconv.Atoi(shopID)
 			shop.ShopName, _ = a.Attr("data-infoname")
 

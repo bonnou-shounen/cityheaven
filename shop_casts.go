@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/jesse0michael/errgroup"
+	"golang.org/x/sync/errgroup"
 )
 
 func (c *Client) GetShopURL(ctx context.Context, area, shop string) (string, error) {
@@ -48,7 +48,8 @@ func (c *Client) GetShopCasts(ctx context.Context, strURL string) ([]*Cast, erro
 	}
 
 	if info.LastPage >= 2 {
-		eg, egCtx := errgroup.WithContext(ctx, 3)
+		eg, egCtx := errgroup.WithContext(ctx)
+		eg.SetLimit(3)
 
 		castsOnPage := make([][]*Cast, info.LastPage+1)
 
