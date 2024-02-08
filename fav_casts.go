@@ -53,7 +53,7 @@ func (c *Client) GetFavoriteCasts(ctx context.Context) ([]*Cast, error) {
 
 func (c *Client) AddFavoriteCast(ctx context.Context, cast *Cast) error {
 	values := url.Values{
-		"girlId": []string{fmt.Sprint(cast.ID)},
+		"girlId": []string{strconv.Itoa(cast.ID)},
 	}
 
 	return c.getSimple(ctx, "https://www.cityheaven.net/tokyo/A0000/A000000/a/okiniiri/", values)
@@ -121,8 +121,8 @@ func (c *Client) SortFavoriteCasts(ctx context.Context, casts []*Cast) error {
 
 func (c *Client) GetFavoriteCount(ctx context.Context, cast *Cast) (int, error) {
 	values := url.Values{
-		"girl_id":  []string{fmt.Sprint(cast.ID)},
-		"commu_id": []string{fmt.Sprint(cast.ShopID)},
+		"girl_id":  []string{strconv.Itoa(cast.ID)},
+		"commu_id": []string{strconv.Itoa(cast.ShopID)},
 	}
 
 	resp, err := c.get(ctx, "https://www.cityheaven.net/api/myheaven/v1/getgirlfavcnt/", values.Encode())
