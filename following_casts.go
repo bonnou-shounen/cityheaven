@@ -25,8 +25,6 @@ func (c *Client) GetFollowingCasts(ctx context.Context) ([]*Cast, error) {
 		castsOnPage := make([][]*Cast, lastPage+1)
 
 		for page := 2; page <= lastPage; page++ {
-			page := page
-
 			eg.Go(func() error {
 				casts, err := c.getFollowingCastsOnPage(egCtx, page, nil)
 				if err != nil {
@@ -120,8 +118,6 @@ func (c *Client) fillShopInfo(ctx context.Context, casts []*Cast) ([]*Cast, erro
 	eg.SetLimit(3)
 
 	for pathURL := range cache {
-		pathURL := pathURL
-
 		eg.Go(func() error {
 			strURL := fmt.Sprint("https://www.cityheaven.net", pathURL)
 
