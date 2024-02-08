@@ -47,12 +47,12 @@ func (o *optShop) readURL() string {
 func (o *optShop) parseURL(str string, pArea, pShop *string) error {
 	iAreaEnd := strings.Index(str, "/A")
 	if iAreaEnd < 0 {
-		return fmt.Errorf(`not found area end "/A"`)
+		return fmt.Errorf(`not found area end "/A": %s`, str)
 	}
 
 	iArea := strings.LastIndex(str[:iAreaEnd], "/")
 	if iArea < 0 {
-		return fmt.Errorf(`not found area start "/"`)
+		return fmt.Errorf(`not found area start "/": %s`, str[:iAreaEnd])
 	}
 
 	*pArea = str[iArea+1 : iAreaEnd]
@@ -61,7 +61,7 @@ func (o *optShop) parseURL(str string, pArea, pShop *string) error {
 
 	iShopLen := strings.Index(str[iShop:], "/")
 	if iShopLen < 0 {
-		return fmt.Errorf(`not found shop end "/"`)
+		return fmt.Errorf(`not found shop end "/": %s`, str[iShop:])
 	}
 
 	*pShop = str[iShop : iShop+iShopLen]

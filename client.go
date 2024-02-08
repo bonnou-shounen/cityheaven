@@ -45,8 +45,12 @@ func (c *Client) Login(ctx context.Context, id, password string) error {
 	res := struct{ IsLogin bool }{}
 
 	err = decoder.Decode(&res)
-	if err != nil || !res.IsLogin {
-		return fmt.Errorf("login failed")
+	if err != nil {
+		return fmt.Errorf("on Decode(): %w", err)
+	}
+
+	if !res.IsLogin {
+		return fmt.Errorf("login failed: %s", id)
 	}
 
 	return nil

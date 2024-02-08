@@ -54,8 +54,6 @@ func (c *Client) GetShopCasts(ctx context.Context, strURL string) ([]*Cast, erro
 		castsOnPage := make([][]*Cast, info.LastPage+1)
 
 		for page := 2; page <= info.LastPage; page++ {
-			page := page
-
 			eg.Go(func() error {
 				casts, err := c.getShopCastsOnPage(egCtx, strURL, page, nil)
 				if err != nil {
