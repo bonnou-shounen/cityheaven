@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/PuerkitoBio/goquery v1.9.1
 	github.com/alecthomas/kong v0.8.1
-	golang.org/x/sync v0.6.0
+	golang.org/x/sync v0.7.0
 )
 
 require (
