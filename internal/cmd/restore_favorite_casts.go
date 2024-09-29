@@ -27,7 +27,7 @@ func (r *RestoreFavoriteCasts) Run(o *CLI) error {
 
 	curCasts, err := client.GetFavoriteCasts(ctx)
 	if err != nil {
-		return fmt.Errorf("on GetFacoriteCasts(): %w", err)
+		return fmt.Errorf("on GetFavoriteCasts(): %w", err)
 	}
 
 	if r.areSame(curCasts, newCasts) {

@@ -1,3 +1,4 @@
+version: 2
 before:
   hooks:
     - go mod tidy
@@ -20,7 +21,7 @@ archives:
   - format: zip
 brews:
   - description: cli for www.cityheaven.net
-    tap:
+    repository:
       owner: bonnou-shounen
       name: homebrew-tap
       token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"

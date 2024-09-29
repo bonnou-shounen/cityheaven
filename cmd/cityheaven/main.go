@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/alecthomas/kong"
+
 	"github.com/bonnou-shounen/cityheaven/internal/cmd"
 )
 
