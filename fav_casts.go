@@ -25,7 +25,7 @@ func (c *Client) GetFavoriteCasts(ctx context.Context) ([]*Cast, error) {
 
 	var casts []*Cast
 
-	doc.Find("div.myshopnew").Each(func(j int, div *goquery.Selection) {
+	doc.Find("div.myshopnew").Each(func(_ int, div *goquery.Selection) {
 		shopName := div.Find("p.myshopnew-head-name").Text()
 		castName := div.Find("p.myshopnew-title").Text()
 		strCastID, _ := div.Find(`input[name="girl"]`).Attr("value")
@@ -107,7 +107,7 @@ func (c *Client) SortFavoriteCasts(ctx context.Context, casts []*Cast) error {
 	queryB := bytes.NewBufferString("update=変更を反映する")
 
 	for _, cast := range casts {
-		queryB.WriteString(fmt.Sprintf("&sort_girl[%d]=1", cast.ID))
+		fmt.Fprintf(queryB, "&girl[%d]=%d", cast.ID, cast.ID)
 	}
 
 	resp, err := c.post(ctx, "https://www.cityheaven.net/y/community/ABEditFavoriteGirl/", queryB.String())

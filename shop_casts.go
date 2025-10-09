@@ -11,7 +11,8 @@ import (
 )
 
 func (c *Client) GetShopURL(ctx context.Context, area, shop string) (string, error) {
-	req, err := http.NewRequest(
+	req, err := http.NewRequestWithContext(
+		ctx,
 		http.MethodHead,
 		fmt.Sprint("https://www.cityheaven.net/", area, "/A0000/A000000/", shop, "/"),
 		nil,
@@ -20,7 +21,7 @@ func (c *Client) GetShopURL(ctx context.Context, area, shop string) (string, err
 		return "", fmt.Errorf("on NewRequest(): %w", err)
 	}
 
-	resp, _ := http.DefaultTransport.RoundTrip(req.WithContext(ctx))
+	resp, _ := http.DefaultTransport.RoundTrip(req)
 	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusMovedPermanently {
@@ -139,6 +140,7 @@ func (c *Client) getShopCastsOnPage(ctx context.Context, strURL string, page int
 	return casts, nil
 }
 
+//nolint:unparam
 func (c *Client) getShopCastsOnOldPage(doc *goquery.Document, pInfo *castsPageInfo) ([]*Cast, error) {
 	var casts []*Cast
 
