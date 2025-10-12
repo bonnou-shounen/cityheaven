@@ -18,10 +18,10 @@ builds:
       - amd64
       - arm64
 archives:
-  - format: zip
-brews:
+  - formats: [ zip ]
+homebrew_casks:
   - description: cli for www.cityheaven.net
     repository:
       owner: bonnou-shounen
       name: homebrew-tap
-      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+      token: "{{ .Env.HOMEBREW_TAP_APP_TOKEN }}"
