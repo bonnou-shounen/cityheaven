@@ -5,7 +5,13 @@ cli for [cityheaven](https://www.cityheaven.net).
 ## install
 
 ```bash
-$ go install github.com/bonnou-shounen/cityheaven/cmd/cityheaven@latest
+go install github.com/bonnou-shounen/cityheaven/cmd/cityheaven@latest
+```
+
+or
+
+```bash
+brew install --cask bonnou-shounen/tap/cityheaven
 ```
 
 ## usage
